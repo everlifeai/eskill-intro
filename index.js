@@ -15,7 +15,7 @@ function main() {
     getAvatarID()
 }
 
-let msKey = 'eskill-tut'
+let msKey = 'eskill-intro'
 
 const commMgrClient = new cote.Requester({
     name: `${msKey} -> CommMgr`,
@@ -41,7 +41,7 @@ function registerWithCommMgr() {
         mskey: msKey,
         mstype: 'msg',
         mshelp: [
-            { cmd: '/tut', txt: 'a quick tutorial on using your avatar' },
+            { cmd: '/intro', txt: 'a quick introduction to using your avatar' },
         ],
     }, (err) => {
         if(err) u.showErr(err)

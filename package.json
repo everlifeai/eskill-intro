@@ -1,7 +1,7 @@
 {
-  "name": "eskill-tut",
+  "name": "eskill-intro",
   "version": "0.1.0",
-  "description": "A Quick Tutorial on using your Avatar",
+  "description": "A Quick Introduction on using your Avatar",
   "main": "index.js",
   "author": "charles.lobo@gmail.com",
   "license": "MIT",

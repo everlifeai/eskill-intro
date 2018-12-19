@@ -1,0 +1,12 @@
+{
+  "name": "eskill-tut",
+  "version": "0.1.0",
+  "description": "A Quick Tutorial on using your Avatar",
+  "main": "index.js",
+  "author": "charles.lobo@gmail.com",
+  "license": "MIT",
+  "dependencies": {
+    "cote": "^0.18.0",
+    "elife-utils": "everlifeai/elife-utils"
+  }
+}

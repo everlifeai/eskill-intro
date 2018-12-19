@@ -99,17 +99,11 @@ function startMicroservice() {
         if(!replies) return cb()
         else {
             cb(null, true)
-            if(!Array.isArray(replies)) replies = [replies]
-            send_replies_1(replies, 0)
-        }
-
-
-        function send_replies_1(replies, ndx) {
-            if(ndx >= replies.length) return
-            sendReply(replies[ndx], req)
-            setTimeout(() => {
-                send_replies_1(replies, ndx+1)
-            }, 2500)
+            if(typeof replies == 'function') replies(req)
+            else {
+                if(!Array.isArray(replies)) replies = [replies]
+                sendReplies(replies, req)
+            }
         }
     })
 
@@ -130,6 +124,7 @@ function startMicroservice() {
         if(!msg) return
 
         let mini_brains = [
+            brain_bye,
             brain_intro,
             brain_get_started,
             brain_hub_is,
@@ -141,14 +136,24 @@ function startMicroservice() {
             brain_try_calc,
             brain_job_dets,
             brain_enroll_twitter,
-            brain_help,
-            brain_bye,
         ]
 
         for(let i = 0;i < mini_brains.length;i++) {
             let r = mini_brains[i](msg, CONV_CTX)
             if(r) return r
         }
+    }
+}
+
+function sendReplies(replies, req) {
+    send_replies_1(0)
+
+    function send_replies_1(ndx) {
+        if(ndx >= replies.length) return
+        sendReply(replies[ndx], req)
+        setTimeout(() => {
+            send_replies_1(ndx+1)
+        }, 2500)
     }
 }
 
@@ -227,15 +232,35 @@ function brain_skip_invite(msg, ctx) {
 
 function brain_use_invite(msg, ctx) {
     if(ctx.ctx != 'use-invite') return
-    if(!msg.startsWith('/use_invite ')) return "Sorry - I didn't understand. Please either /use_invite or say /bye to leave this tutorial"
+    if(msg.startsWith('/use_invite ')) return use_invite_1()
+    if(msg.toLowerCase() == '/skip_invite') return skip_invite_1()
+    return "Sorry - I didn't understand. Please either /use_invite, /skip_invite, or say /bye to leave this tutorial"
 
-    // TODO: use invite
-    ctx.ctx = 'install-skill-1'
-    return [
-        "Great job! Let's now install a new skill",
-        `/Proceed`,
-    ]
 
+    function skip_invite_1() {
+        ctx.ctx = 'install-skill-1'
+        return [
+            "Ok let's join everyone later! For now, let's install a new skill",
+            "/Proceed",
+        ]
+    }
+
+    function use_invite_1() {
+        return function(req) {
+            let inviteCode = msg.substr('/use_invite '.length)
+            ssbClient.send({ type: "accept-invite", invite: inviteCode }, (err) => {
+                if(err) {
+                    sendReply("Failed to join pub. Try again after a while or /skip_invite for now", req)
+                } else {
+                    ctx.ctx = 'install-skill-1'
+                    sendReplies([
+                        "Great job! Let's now install a new skill",
+                        "/Proceed",
+                    ], req)
+                }
+            })
+        }
+    }
 }
 
 function brain_install_1(msg, ctx) {
@@ -250,30 +275,58 @@ function brain_install_1(msg, ctx) {
     ]
 }
 
+const skillmgrClient = new cote.Requester({
+    name: `${msKey} -> SSB`,
+    key: 'everlife-skill-svc',
+})
+
 function brain_install_2(msg, ctx) {
     if(ctx.ctx != 'install-skill-2') return
     if(msg.toLowerCase() != '/install calculator') return "Please type /install calculator to install the basic calculator skill"
 
-    //TODO: install calculator
-    ctx.ctx = 'try-calc'
-    return [
-        `Wonderful, looks like you are getting the hang of this quickly. I'm so proud of you`,
-        `Try /calc 5+5`,
-    ]
+    return function(req) {
+        skillmgrClient.send({ type: 'add', pkg: 'calculator'}, (err) => {
+            if(err) sendReply(`Error installing calculator skill. Please try again\n${err}`, req)
+            else {
+                ctx.ctx = 'try-calc'
+                sendReplies([
+                    `Wonderful, looks like you are getting the hang of this quickly. I'm so proud of you`,
+                    `Try /calc 5+5`,
+
+                ], req)
+            }
+        })
+    }
 }
+
+const calcClient = new cote.Requester({
+    name: `${msKey} -> SSB`,
+    key: 'everlife-calculator-demo-svc',
+})
 
 function brain_try_calc(msg, ctx) {
     if(ctx.ctx != 'try-calc') return
-    if(!msg.startsWith('/calc ')) return "You can try the calculator by using /calc 32*54 (or say /bye for now)"
+    let errmsg = "You can try the calculator by using /calc 32*54 (or say /bye for now)"
+    if(!msg.startsWith('/calc ')) return errmsg
 
-    //TODO: calc
-    ctx.ctx = 'job-details'
-    return [
-        'Remember, if you need help at any time, you can type /help to see the commands you can use.',
-        'Hey, between did I tell you that will the right skills, I can apply for jobs and earn in EVER coins.',
-        'The skills required for each job could be different. Lets now apply for our first job.',
-        `/View_Job_Details`,
-    ]
+    return function(req) {
+        let expr = msg.substring('/calc '.length)
+        expr = expr.trim()
+        if(!expr) sendReply(errmsg, req)
+        else calcClient.send({type: 'calc', expr: expr}, (v) => {
+            if(!v) sendReply(errmsg, req)
+            else {
+                sendReply(v, req)
+                ctx.ctx = 'job-details'
+                sendReplies([
+                    'Remember, if you need help at any time, you can type /help to see the commands you can use.',
+                    'Hey, between did I tell you that will the right skills, I can apply for jobs and earn in EVER coins.',
+                    'The skills required for each job could be different. Lets now apply for our first job.',
+                    `/View_Job_Details`,
+                ], req)
+            }
+        })
+    }
 }
 
 function brain_job_dets(msg, ctx) {
@@ -316,13 +369,9 @@ function brain_enroll_twitter(msg, ctx) {
     }
 }
 
-function brain_help(msg, ctx) {
-    // TODO: show help
-}
-
 function brain_bye(msg, ctx) {
     if(!ctx.ctx) return
-    if(msg != '/bye' || msg != 'bye') return
+    if(msg.toLowerCase() != '/bye' && msg.toLowerCase() != 'bye') return
     ctx.ctx = null
     return "bye!"
 }

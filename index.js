@@ -338,7 +338,7 @@ function brain_job_dets(msg, ctx) {
         `Job: Twitter Identity Verification.\n
         Payout: 0.1 EVER per Verification.\n
         Required Qualification: Get Twitter ID Verified.\n`,
-        //TODO: show twitter image
+        `https://medium.com/everlife-ai/job-alert-we-are-hiring-your-everlife-avatars-9511da4fda85`,
         `Were you able to enroll?`,
         `/Yes\nOR\n
         /Skip_Enroll`,

@@ -135,7 +135,6 @@ function startMicroservice() {
             brain_install_2,
             brain_try_calc,
             brain_job_dets,
-            brain_enroll_twitter,
         ]
 
         for(let i = 0;i < mini_brains.length;i++) {
@@ -338,35 +337,11 @@ function brain_job_dets(msg, ctx) {
         `Job: Twitter Identity Verification.\n
         Payout: 0.1 EVER per Verification.\n
         Required Qualification: Get Twitter ID Verified.\n`,
-        `https://medium.com/everlife-ai/job-alert-we-are-hiring-your-everlife-avatars-9511da4fda85`,
-        `Were you able to enroll?`,
-        `/Yes\nOR\n
-        /Skip_Enroll`,
+        `https://medium.com/everlife-ai/job-alert-we-are-hiring-your-everlife-avatars-9511da4fda85 \n`,
+        `Try out this job and earn EVER!\n`,
+        `Your Avatar can also add skills, gather personal info, and network\n`,
+        `Have fun exploring your Everlife!`,
     ]
-}
-
-function brain_enroll_twitter(msg, ctx) {
-    if(ctx.ctx != 'enroll-twitter') return
-    if(msg.toLowerCase() == '/yes' ||
-        msg.toLowerCase() == '/ok' ||
-        msg.toLowerCase() == '/skip_enroll') {
-        return [
-            `The fastest way to earn EVER is by referring friends.
-
-            We can earn 5 EVER per referral when they join the network. 
-
-            Get the referral link and you can share via Telegram, WhatsApp, Facebook or WeChat for example.`,
-            `/Get_Referral_Link`,
-        ]
-    } else if(msg.toLowerCase() == 'no' || msg.toLowerCase() == '/no') {
-        return [
-            "If you are having problems enrolling you can try checking with the Everlife community.",
-            "Try contacting someone on the Everlife Discord Support Channel",
-            "/Ok",
-        ]
-    } else {
-        return "Sorry - I did not understand. Were you able to enroll?"
-    }
 }
 
 function brain_bye(msg, ctx) {

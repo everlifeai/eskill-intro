@@ -163,7 +163,7 @@ function sendReplies(replies, req) {
 let CONV_CTX = { ctx: null }
 
 function brain_intro(msg, ctx) {
-    if(msg != '/tut') return
+    if(msg != '/intro' && is_not_start_1(msg)) return
 
     ctx.ctx = 'tutorial-started'
     return [
@@ -177,6 +177,27 @@ function brain_intro(msg, ctx) {
         There are some cool skills you can install from the marketplace to upgrade my capabilities as well.`,
         `/Get_Started`,
     ]
+
+
+    /*      understand/
+     * When a bot starts up (telegram, messenger, QWERT...) for the
+     * first time, it usually brings up a 'start' button that allows the
+     * user to be onboarded smoothly.
+     *
+     *      outcome/
+     * We check for any variant of `/start` (that we can think off).
+     */
+    function is_not_start_1(msg) {
+        let alts = [
+            '/start',
+            '/get_started',
+        ]
+        for(let i = 0;i < alts.length;i++) {
+            if(msg == alts[i]) return false
+        }
+        return true
+    }
+
 }
 
 function brain_get_started(msg, ctx) {

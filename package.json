@@ -4,9 +4,5 @@
   "description": "A Quick Introduction on using your Avatar",
   "main": "index.js",
   "author": "charles.lobo@gmail.com",
-  "license": "MIT",
-  "dependencies": {
-    "cote": "^0.18.0",
-    "elife-utils": "everlifeai/elife-utils"
-  }
+  "license": "MIT"
 }
